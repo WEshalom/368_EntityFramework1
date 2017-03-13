@@ -17,7 +17,7 @@ namespace EF.Test
         public void Init()
         {
             // in memory database - -isolated instances of the db
-            _db = new SchoolDbContext4(Effort.DbConnectionFactory.CreateTransient());
+            _db = new SchoolDbContext4(Effort.DbConnectionFactory.CreatePersistent("1"));
             dbStats = new LINQ_EntityFramework.DbStatistics(_db);
         }
 
@@ -26,9 +26,7 @@ namespace EF.Test
         {
             _db.People.Add(new Person() {First = "Rafi", Last = "Gal"});
             _db.SaveChanges();
-            _db.People.Count().Should().Be(1);
-
-            dbStats.CarCount.Should().Be(0);
+            _db.People.Count(p=>p.First=="Rafi").Should().Be(1);
         }
 
 
@@ -37,9 +35,7 @@ namespace EF.Test
         {
             _db.People.Add(new Person() { First = "Eliezer", Last = "Hashimi" });
             _db.SaveChanges();
-            _db.People.Count().Should().Be(1);
-
-            dbStats.CarCount.Should().Be(0);
+            _db.People.Count(p => p.First == "Eliezer").Should().Be(1);
         }
 
 
@@ -47,16 +43,16 @@ namespace EF.Test
         public void TestMethod3()
         {
             Seed(10);
-            _db.People.Count().Should().Be(10);
-            _db.Cars.Count().Should().Be(45);
-
+            
+            _db = new SchoolDbContext4(Effort.DbConnectionFactory.CreatePersistent("1"));
+            dbStats = new LINQ_EntityFramework.DbStatistics(_db);
             // number of cars per person: Last Name, Cars Per Person
 
             var carsPerPerson = dbStats.CarsPerPerson;
 
-            carsPerPerson.Count().Should().Be(10);
+            carsPerPerson.Count().Should().BeGreaterOrEqualTo(10);
 
-            carsPerPerson.Last().Item2.Should().Be(9);
+            carsPerPerson.Last().Item2.Should().BeGreaterOrEqualTo(9);
         }
 
         private void Seed(int numPersons)
@@ -81,6 +77,10 @@ namespace EF.Test
                 }
                 _db.SaveChanges();
             }
+
+
+            _db.People.Count(p=>p.First.Contains("First")).Should().BeGreaterOrEqualTo(10);
+            _db.Cars.Count(c => c.Make.Contains("Make")).Should().BeGreaterOrEqualTo(45);
         }
     }
 }

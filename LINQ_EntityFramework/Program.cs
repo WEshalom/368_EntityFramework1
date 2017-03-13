@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Linq;
@@ -10,71 +9,9 @@ using System.Threading.Tasks;
 
 namespace LINQ_EntityFramework
 {
-    public class DbStatistics
-    {
-        private ISchoolDbContext4 _db;
-        public DbStatistics(ISchoolDbContext4 db )
-        {
-            _db = db;
-            
-                PeopleCount = _db.People.Count();
-                CarCount = _db.Cars.Count();
-             // auto closed
-        }
-        public int PeopleCount { get; set; }
-        public int CarCount { get; set; }
-
-        public IEnumerable<Tuple<string, int>> CarsPerPerson
-        {
-            get
-            {
-                return _db.People
-                //    .Include(p => p.Cars)
-                    .ToList()
-                    .Select(p => new {Name = p.Last, CarCount = p.Cars.Count(c=>c.Make != null) })
-                    .ToList()
-                    .Select(o => new Tuple<string, int>(o.Name, o.CarCount));
-            }
-        }
-    }
-
-
     public enum Color { Unset = 0, Red, Indigo, Purple, Algerian, Green, Lavender}
 
-    public class Car
-    {
-        public int CarId { get; set; }
-        public Color Color { get; set; }
-        public string Make { get; set; }
-        public string Model { get; set; }
-
-
-        //knows by convention that this is a Foreign Key
-        public int? PersonId { get; set; }
-
-        //Navigation Property (by default lazy loads Person on access)..virtual required
-        public virtual Person Person { get; set; }
-    }
-
     // Person to Cars is 1 to many
-
-    public class Person // POCO
-    {
-        public Person()
-        {
-            Cars = new List<Car>();
-        }
-        // no need for[Key] to identify the Primary
-        public int PersonId { get; set; } // primary key // every entity MUST have a Primary Key
-        public string First { get; set; }
-        public string Last { get; set; }
-        public string Suffix { get; set; }
-
-        [NotMapped]
-        public String FullName { get { return $"{Last}, {First}"; } }
-
-        public List<Car> Cars { get; set; }
-    }
 
     public interface ISchoolDbContext4
     {
